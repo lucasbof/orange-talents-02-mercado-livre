@@ -38,7 +38,6 @@ class UserControllerTest {
 	private UserRepository userRepository;
 
 	private UserForm newUserFormValid;
-	private UserForm newUserFormInvalid;
 
 	@BeforeEach
 	void setUp() throws Exception {
@@ -47,10 +46,6 @@ class UserControllerTest {
 							.setEmail("lucas@gmail.com")
 							.setPassword("123456")
 							.build();
-		this.newUserFormInvalid = userFormBuilder
-									.setEmail("")
-									.setPassword("")
-									.build();
 	}
 	
 	@Test
@@ -70,10 +65,12 @@ class UserControllerTest {
 	}
 	
 	@Test
-	void insertShouldReturn400WhenTheDataIsInvalid() throws Exception {
+	void insertShouldReturn400WhenEmailIsNotUnique() throws Exception {
+		userRepository.save(newUserFormValid.toModel());
+		
 		ResultActions result =
 				mockMvc.perform(post("/users")
-					.content(toJson(newUserFormInvalid))
+					.content(toJson(newUserFormValid))
 					.contentType(MediaType.APPLICATION_JSON)
 					.accept(MediaType.APPLICATION_JSON));
 		
@@ -81,7 +78,7 @@ class UserControllerTest {
 		
 		long count = userRepository.count();
 		
-		Assertions.assertEquals(0L, count);
+		Assertions.assertEquals(1L, count);
 	}
 
 	private String toJson(Object obj) throws Exception {
