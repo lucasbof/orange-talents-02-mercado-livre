@@ -5,16 +5,20 @@ import java.io.Serializable;
 public class TokenResponse implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
-	@SuppressWarnings("unused")
+
 	private String token;
-	@SuppressWarnings("unused")
-	private String tipo;
-	
-	public TokenResponse(String token, String tipo) {
+	private String type;
+
+	public TokenResponse(String token, String type) {
 		this.token = token;
-		this.tipo = tipo;
+		this.type = type;
 	}
 
-	
+	public String getToken() {
+		return token;
+	}
+
+	public String getType() {
+		return type;
+	}
 }

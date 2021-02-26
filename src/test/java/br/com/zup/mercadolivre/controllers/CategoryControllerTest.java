@@ -3,11 +3,10 @@ package br.com.zup.mercadolivre.controllers;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -21,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +34,7 @@ import br.com.zup.mercadolivre.entities.Category;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@WithUserDetails(value = "lucas@gmail.com")
 class CategoryControllerTest {
 
 	@Autowired
@@ -62,11 +63,13 @@ class CategoryControllerTest {
 		
 		result.andExpect(status().isOk());
 		
-		List<Category> list = manager.createQuery("SELECT c FROM Category c", Category.class).getResultList();
-		assertEquals(1, list.size());
+		TypedQuery<Category> query = manager.createQuery("SELECT c FROM Category c WHERE c.name = :name", Category.class);
+		query.setParameter("name", categoryForm.getName());
+		Category category = query.getSingleResult();
 		
-		assertEquals(categoryForm.getName(), list.get(0).getName());
-		assertEquals(categoryForm.getParentCategoryId(), list.get(0).getParentCategory());
+		assertNotNull(category);
+		assertEquals(categoryForm.getName(), category.getName());
+		assertNull(category.getParentCategory());
 	}
 	
 	@Test
@@ -112,17 +115,13 @@ class CategoryControllerTest {
 					.accept(MediaType.APPLICATION_JSON));
 		
 		result.andExpect(status().isBadRequest());
-		
-
-		List<Category> list = manager.createQuery("SELECT c FROM Category c", Category.class).getResultList();
-		assertEquals(0, list.size());
 				
 		result.andExpect(jsonPath("$.errors").isArray());
 		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("name")));
 	}
 	
 	@Test
-	@DisplayName("insert method shouldn't insert category and should return 400 with error message when name is not unique")
+	@DisplayName("insert method should return 400 with error message when name is not unique")
 	void insertShouldReturn400WhenEmailIsNotUnique() throws Exception {
 		String categoryName = "Eletrônicos";
 		Category cat = new Category(categoryName);
@@ -140,16 +139,13 @@ class CategoryControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 		
-		List<Category> list = manager.createQuery("SELECT c FROM Category c", Category.class).getResultList();
-		assertEquals(1, list.size());
-		
 		result.andExpect(jsonPath("$.errors").isArray());
 		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("name")));
 	}
 	
 	@ParameterizedTest
 	@CsvSource(value = {"-1", "-50", "100000", "100700"})
-	@DisplayName("insert method shouldn't insert category and should return 400 with error message when parentCategoryId isn't exist or is negative")
+	@DisplayName("insert method should return 400 with error message when parentCategoryId isn't exist or is negative")
 	void insertShouldReturn400WhenParentCategoryIdIsNotExistOrIsNegative(Long parentCategoryId) throws Exception {	
 		CategoryForm categoryForm = categoryFormBuilder
 				.setName("Eletrônicos")
@@ -164,9 +160,6 @@ class CategoryControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 		
-		List<Category> list = manager.createQuery("SELECT c FROM Category c", Category.class).getResultList();
-		assertEquals(0, list.size());
-		
 		result.andExpect(jsonPath("$.errors").isArray());
 		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("parentCategoryId")));
 	}
@@ -175,5 +168,4 @@ class CategoryControllerTest {
 	private String toJson(Object obj) throws Exception {
 		return objectMapper.writeValueAsString(obj);
 	}
-
 }

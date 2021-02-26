@@ -1,8 +1,11 @@
 package br.com.zup.mercadolivre.configs;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -23,11 +26,14 @@ import br.com.zup.mercadolivre.services.AuthService;
 public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
+	private Environment env;
+
+	@Autowired
 	private UserDetailsService autenticacaoService;
-	
+
 	@Autowired
 	private AuthService authService;
-	
+
 	@Autowired
 	private UserRepository userRepository;
 
@@ -36,23 +42,28 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(autenticacaoService).passwordEncoder(new BCryptPasswordEncoder());
 	}
-	
+
 	// configs de autorização
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		// H2
+		if (Arrays.asList(env.getActiveProfiles()).contains("test")) {
+			http.headers().frameOptions().disable();
+		}
+		
 		http.authorizeRequests()
-		.antMatchers(HttpMethod.POST, "/auth").permitAll()
-		.antMatchers(HttpMethod.POST, "/users").permitAll()
-		.antMatchers(HttpMethod.POST, "/categories").permitAll()
-		.anyRequest().authenticated()
-		.and().csrf().disable()
-		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-		.and().addFilterBefore(new AuthenticationByTokenFilter(authService, userRepository), UsernamePasswordAuthenticationFilter.class);
+				.antMatchers(HttpMethod.POST, "/auth").permitAll()
+				.antMatchers("/h2-console/**").permitAll()
+				.anyRequest().authenticated()
+				.and().csrf().disable().sessionManagement()
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+				.addFilterBefore(new AuthenticationByTokenFilter(authService, userRepository),
+						UsernamePasswordAuthenticationFilter.class);
 	}
 
 	// configs de recursos estáticos
 	@Override
-	public void configure(WebSecurity web) throws Exception {	
+	public void configure(WebSecurity web) throws Exception {
 	}
 
 	@Override
@@ -60,7 +71,5 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	protected AuthenticationManager authenticationManager() throws Exception {
 		return super.authenticationManager();
 	}
-	
-	
-	
+
 }

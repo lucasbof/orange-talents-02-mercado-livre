@@ -2,11 +2,12 @@ package br.com.zup.mercadolivre.controllers;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ import br.com.zup.mercadolivre.repositories.UserRepository;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@WithUserDetails(value = "lucas@gmail.com")
 class UserControllerTest {
 	
 	@Autowired
@@ -46,14 +49,14 @@ class UserControllerTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		
 	}
 	
 	@Test
 	@DisplayName("insert method should insert user and return 200 when the data form is valid")
 	void insertShouldInsertUserWhenTheDataIsValid() throws Exception {
+		String email = "bob@gmail.com";
 		UserForm userForm = userFormBuilder
-				.setEmail("lucas@gmail.com")
+				.setEmail(email)
 				.setPassword("123456")
 				.build();
 		
@@ -65,17 +68,17 @@ class UserControllerTest {
 		
 		result.andExpect(status().isOk());
 		
-		List<User> list = userRepository.findAll();
-		assertEquals(1, list.size());
+		Optional<User> user = userRepository.findByEmail(email);
 		
-		assertEquals(userForm.getEmail(), list.get(0).getEmail());
+		assertTrue(user.isPresent());
+		assertEquals(email, user.get().getEmail());
 	}
 	
 	@Test
 	@DisplayName("insert method shouldn't insert user and should return 400 with error message when the email is not unique")
 	void insertShouldReturn400WhenEmailIsNotUnique() throws Exception {
 		UserForm userForm = userFormBuilder
-				.setEmail("lucas@gmail.com")
+				.setEmail("bob@gmail.com")
 				.setPassword("123456")
 				.build();
 
@@ -89,10 +92,6 @@ class UserControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 		
-		long count = userRepository.count();
-		
-		assertEquals(1L, count);
-		
 		result.andExpect(jsonPath("$.errors").isArray());
 		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("email")));
 	}
@@ -101,7 +100,7 @@ class UserControllerTest {
 	// "," -> null string
 	// "'   '" -> only spaces string
 	@ParameterizedTest
-	@CsvSource(value = {"''", ",", "'     '", "lucas", "@gmail.com"})
+	@CsvSource(value = {"''", ",", "'     '", "bob", "@gmail.com"})
 	@DisplayName("insert method shouldn't insert user and should return 400 with error message when the email is blank or invalid")
 	void insertShouldReturn400WhenEmailIsBlankOrInvalid(String email) throws Exception {
 		UserForm userForm = userFormBuilder
@@ -116,10 +115,6 @@ class UserControllerTest {
 					.accept(MediaType.APPLICATION_JSON));
 		
 		result.andExpect(status().isBadRequest());
-		
-		long count = userRepository.count();
-		
-		assertEquals(0L, count);
 		
 		result.andExpect(jsonPath("$.errors").isArray());
 		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("email")));
@@ -145,10 +140,6 @@ class UserControllerTest {
 					.accept(MediaType.APPLICATION_JSON));
 		
 		result.andExpect(status().isBadRequest());
-		
-		long count = userRepository.count();
-		
-		assertEquals(0L, count);
 		
 		result.andExpect(jsonPath("$.errors").isArray());
 		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("password")));
