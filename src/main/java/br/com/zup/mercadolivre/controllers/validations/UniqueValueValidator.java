@@ -3,11 +3,11 @@ package br.com.zup.mercadolivre.controllers.validations;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
 public class UniqueValueValidator implements ConstraintValidator<UniqueValue, String> {
@@ -20,10 +20,13 @@ public class UniqueValueValidator implements ConstraintValidator<UniqueValue, St
 		 Caso esteja na entidade, o Hibernate que faria a injeção, mas ele não conseguiria fazer esta injeção, por não estar no contexto do Spring
 		 e assim, este objeto será nulo podendo lançar NullPointerException em isValid
 	 */
-	@PersistenceContext
 	private EntityManager manager;
 	
-	
+	@Autowired
+	public UniqueValueValidator(EntityManager manager) {
+		this.manager = manager;
+	}
+
 	@Override
 	public void initialize(UniqueValue params) {
 		this.fieldName = params.fieldName();
@@ -34,7 +37,7 @@ public class UniqueValueValidator implements ConstraintValidator<UniqueValue, St
 	public boolean isValid(String value, ConstraintValidatorContext context) {
 		Query query = manager.createQuery("SELECT 1 FROM " + domainClass.getName() + " WHERE LOWER(" + fieldName + ") = LOWER(:value)");
 		
-		query.setParameter("value", value.trim());
+		query.setParameter("value", value);
 		List<?> resultList = query.getResultList();
 		
 		Assert.state(resultList.size() <= 1, "Foi encontrado mais de um " + domainClass + "com o atributo " + fieldName );

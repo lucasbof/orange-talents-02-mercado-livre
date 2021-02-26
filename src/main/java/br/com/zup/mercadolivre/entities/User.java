@@ -27,6 +27,7 @@ public class User implements UserDetails, Serializable {
 	private String password;
 	private LocalDate createdAt;
 	
+	@Deprecated
 	public User() {
 	}
 

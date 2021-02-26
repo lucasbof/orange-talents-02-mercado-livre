@@ -23,7 +23,7 @@ public class UserController {
 	
 	@PostMapping
 	@Transactional
-	private ResponseEntity<Void> insert(@RequestBody @Valid UserForm userForm) {
+	public ResponseEntity<Void> insert(@RequestBody @Valid UserForm userForm) {
 		User user = userForm.toModel();
 		user = repository.save(user);
 		return ResponseEntity.ok().build();

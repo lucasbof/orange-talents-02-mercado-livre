@@ -1,13 +1,18 @@
 package br.com.zup.mercadolivre.controllers;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,41 +41,49 @@ class UserControllerTest {
 	
 	@Autowired
 	private UserRepository userRepository;
-
-	private UserForm newUserFormValid;
+	
+	private UserFormBuilder userFormBuilder = new UserFormBuilder();
 
 	@BeforeEach
 	void setUp() throws Exception {
-		UserFormBuilder userFormBuilder = new UserFormBuilder();
-		this.newUserFormValid = userFormBuilder
-							.setEmail("lucas@gmail.com")
-							.setPassword("123456")
-							.build();
+		
 	}
 	
 	@Test
+	@DisplayName("insert method should insert user and return 200 when the data form is valid")
 	void insertShouldInsertUserWhenTheDataIsValid() throws Exception {
+		UserForm userForm = userFormBuilder
+				.setEmail("lucas@gmail.com")
+				.setPassword("123456")
+				.build();
+		
 		ResultActions result =
 				mockMvc.perform(post("/users")
-					.content(toJson(newUserFormValid))
+					.content(toJson(userForm))
 					.contentType(MediaType.APPLICATION_JSON)
 					.accept(MediaType.APPLICATION_JSON));
 		
 		result.andExpect(status().isOk());
 		
 		List<User> list = userRepository.findAll();
-		Assertions.assertEquals(1, list.size());
+		assertEquals(1, list.size());
 		
-		Assertions.assertEquals(newUserFormValid.getEmail(), list.get(0).getEmail());
+		assertEquals(userForm.getEmail(), list.get(0).getEmail());
 	}
 	
 	@Test
+	@DisplayName("insert method shouldn't insert user and should return 400 with error message when the email is not unique")
 	void insertShouldReturn400WhenEmailIsNotUnique() throws Exception {
-		userRepository.save(newUserFormValid.toModel());
+		UserForm userForm = userFormBuilder
+				.setEmail("lucas@gmail.com")
+				.setPassword("123456")
+				.build();
+
+		userRepository.save(userForm.toModel());
 		
 		ResultActions result =
 				mockMvc.perform(post("/users")
-					.content(toJson(newUserFormValid))
+					.content(toJson(userForm))
 					.contentType(MediaType.APPLICATION_JSON)
 					.accept(MediaType.APPLICATION_JSON));
 		
@@ -78,7 +91,67 @@ class UserControllerTest {
 		
 		long count = userRepository.count();
 		
-		Assertions.assertEquals(1L, count);
+		assertEquals(1L, count);
+		
+		result.andExpect(jsonPath("$.errors").isArray());
+		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("email")));
+	}
+	
+	// "''" -> empty string
+	// "," -> null string
+	// "'   '" -> only spaces string
+	@ParameterizedTest
+	@CsvSource(value = {"''", ",", "'     '", "lucas", "@gmail.com"})
+	@DisplayName("insert method shouldn't insert user and should return 400 with error message when the email is blank or invalid")
+	void insertShouldReturn400WhenEmailIsBlankOrInvalid(String email) throws Exception {
+		UserForm userForm = userFormBuilder
+				.setEmail(email)
+				.setPassword("123456")
+				.build();
+		
+		ResultActions result =
+				mockMvc.perform(post("/users")
+					.content(toJson(userForm))
+					.contentType(MediaType.APPLICATION_JSON)
+					.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isBadRequest());
+		
+		long count = userRepository.count();
+		
+		assertEquals(0L, count);
+		
+		result.andExpect(jsonPath("$.errors").isArray());
+		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("email")));
+	}
+	
+	// "''" -> empty string
+	// "," -> null string
+	// "'   '" -> only spaces string
+	@ParameterizedTest
+	@CsvSource(value = {"''", "'     '", ",", "1", "12", "123", "1234", "12345"})
+	@DisplayName("insert method shouldn't insert user and should return 400 with error message when the password has"
+			+ " length less than 6 or is blank")
+	void insertShouldReturn400WhenPasswordHasLengthLessThan6OrIsEmpty(String password) throws Exception {
+		UserForm userForm = userFormBuilder
+				.setEmail("lucas@gmail.com")
+				.setPassword(password)
+				.build();
+		
+		ResultActions result =
+				mockMvc.perform(post("/users")
+					.content(toJson(userForm))
+					.contentType(MediaType.APPLICATION_JSON)
+					.accept(MediaType.APPLICATION_JSON));
+		
+		result.andExpect(status().isBadRequest());
+		
+		long count = userRepository.count();
+		
+		assertEquals(0L, count);
+		
+		result.andExpect(jsonPath("$.errors").isArray());
+		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("password")));
 	}
 
 	private String toJson(Object obj) throws Exception {
