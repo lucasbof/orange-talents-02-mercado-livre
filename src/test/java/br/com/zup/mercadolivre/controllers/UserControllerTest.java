@@ -92,8 +92,8 @@ class UserControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 		
-		result.andExpect(jsonPath("$.errors").isArray());
-		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("email")));
+		result.andExpect(jsonPath("$.fieldErrors").isArray());
+		result.andExpect(jsonPath("$.fieldErrors[*].fieldName", hasItem("email")));
 	}
 	
 	// "''" -> empty string
@@ -116,8 +116,8 @@ class UserControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 		
-		result.andExpect(jsonPath("$.errors").isArray());
-		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("email")));
+		result.andExpect(jsonPath("$.fieldErrors").isArray());
+		result.andExpect(jsonPath("$.fieldErrors[*].fieldName", hasItem("email")));
 	}
 	
 	// "''" -> empty string
@@ -141,8 +141,8 @@ class UserControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 		
-		result.andExpect(jsonPath("$.errors").isArray());
-		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("password")));
+		result.andExpect(jsonPath("$.fieldErrors").isArray());
+		result.andExpect(jsonPath("$.fieldErrors[*].fieldName", hasItem("password")));
 	}
 
 	private String toJson(Object obj) throws Exception {

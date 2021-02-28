@@ -116,8 +116,8 @@ class CategoryControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 				
-		result.andExpect(jsonPath("$.errors").isArray());
-		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("name")));
+		result.andExpect(jsonPath("$.fieldErrors").isArray());
+		result.andExpect(jsonPath("$.fieldErrors[*].fieldName", hasItem("name")));
 	}
 	
 	@Test
@@ -139,8 +139,8 @@ class CategoryControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 		
-		result.andExpect(jsonPath("$.errors").isArray());
-		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("name")));
+		result.andExpect(jsonPath("$.fieldErrors").isArray());
+		result.andExpect(jsonPath("$.fieldErrors[*].fieldName", hasItem("name")));
 	}
 	
 	@ParameterizedTest
@@ -160,8 +160,8 @@ class CategoryControllerTest {
 		
 		result.andExpect(status().isBadRequest());
 		
-		result.andExpect(jsonPath("$.errors").isArray());
-		result.andExpect(jsonPath("$.errors[*].fieldName", hasItem("parentCategoryId")));
+		result.andExpect(jsonPath("$.fieldErrors").isArray());
+		result.andExpect(jsonPath("$.fieldErrors[*].fieldName", hasItem("parentCategoryId")));
 	}
 	
 	

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,14 +26,13 @@ public class ResourceExceptionHandler {
 	public ResponseEntity<ValidationError> validation(MethodArgumentNotValidException e, HttpServletRequest request) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		ValidationError err = new ValidationError();
-		err.setTimestamp(Instant.now());
-		err.setStatus(status.value());
-		err.setError("Validation exception");
-		err.setMessage(e.getMessage());
-		err.setPath(request.getRequestURI());
+		
+		for(ObjectError f : e.getBindingResult().getGlobalErrors()) {
+			err.addGlobalError(f.getCode(), messageSource.getMessage(f, LocaleContextHolder.getLocale()));
+		}
 		
 		for(FieldError f : e.getBindingResult().getFieldErrors()) {
-			err.addError(f.getField(), messageSource.getMessage(f, LocaleContextHolder.getLocale()));
+			err.addFieldError(f.getField(), messageSource.getMessage(f, LocaleContextHolder.getLocale()));
 		}
 		
 		return ResponseEntity.status(status).body(err);
