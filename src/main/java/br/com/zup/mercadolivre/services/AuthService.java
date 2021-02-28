@@ -39,8 +39,12 @@ public class AuthService implements UserDetailsService {
 		User user = (User) auth.getPrincipal();
 		Date hoje = new Date();
 		Date dataExpiracao = new Date(hoje.getTime() + Long.parseLong(expiration));
-		return Jwts.builder().setIssuer("API do Mercado Livre").setSubject(user.getId().toString()).setIssuedAt(hoje)
-				.setExpiration(dataExpiracao).signWith(SignatureAlgorithm.HS256, secret).compact();
+		return Jwts.builder()
+				.setIssuer("API do Mercado Livre")
+				.setSubject(user.getId().toString())
+				.setIssuedAt(hoje)
+				.setExpiration(dataExpiracao).signWith(SignatureAlgorithm.HS256, secret)
+				.compact();
 	}
 
 	public boolean isValidToken(String token) {

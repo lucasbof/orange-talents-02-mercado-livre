@@ -38,4 +38,6 @@ public class ProductController {
 		manager.persist(product);
 		return ResponseEntity.ok().build();
 	}
+	
+	
 }

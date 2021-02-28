@@ -1,5 +1,6 @@
 package br.com.zup.mercadolivre.entities;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -23,7 +24,9 @@ import io.jsonwebtoken.lang.Assert;
 
 @Entity
 @Table(name = "tb_product")
-public class Product {
+public class Product implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +47,13 @@ public class Product {
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST)
 	private Set<Characteristic> characteristics = new HashSet<>();
+	
+	@OneToMany(mappedBy = "product", cascade = CascadeType.MERGE)
+	private Set<ProductImage> images = new HashSet<>();
+	
+	@Deprecated
+	public Product() {
+	}
 
 	public Product(String name, BigDecimal price, Integer quantity, String description, User owner,
 			Category category, Collection<CharacteristicForm> characteristics) {
@@ -102,9 +112,17 @@ public class Product {
 		return createdAt;
 	}
 
+	public Set<ProductImage> getImages() {
+		return images;
+	}
+
 	@PrePersist
 	public void prePersist() {
 		this.createdAt = LocalDate.now();
+	}
+
+	public void bindImgUrls(Set<String> links) {
+		links.stream().forEach(link -> this.images.add(new ProductImage(link, this)));
 	}
 
 }

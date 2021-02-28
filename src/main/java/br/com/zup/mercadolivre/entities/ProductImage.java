@@ -11,28 +11,26 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "tb_characteristic")
-public class Characteristic implements Serializable {
+@Table(name = "tb_product_image")
+public class ProductImage implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private String name;
-	private String description;
-	
+	private String imgUrl;
+
 	@ManyToOne
 	@JoinColumn(name = "product_id")
 	private Product product;
-	
+
 	@Deprecated
-	public Characteristic() {
+	public ProductImage() {
 	}
-	
-	public Characteristic(String name, String description, Product product) {
-		this.name = name;
-		this.description = description;
+
+	public ProductImage(String imgUrl, Product product) {
+		this.imgUrl = imgUrl;
 		this.product = product;
 	}
 
@@ -40,19 +38,19 @@ public class Characteristic implements Serializable {
 		return id;
 	}
 
-	public String getName() {
-		return name;
+	public String getImgUrl() {
+		return imgUrl;
 	}
 
-	public String getDescription() {
-		return description;
+	public Product getProduct() {
+		return product;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((imgUrl == null) ? 0 : imgUrl.hashCode());
 		return result;
 	}
 
@@ -64,12 +62,13 @@ public class Characteristic implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Characteristic other = (Characteristic) obj;
-		if (name == null) {
-			if (other.name != null)
+		ProductImage other = (ProductImage) obj;
+		if (imgUrl == null) {
+			if (other.imgUrl != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!imgUrl.equals(other.imgUrl))
 			return false;
 		return true;
 	}
+
 }

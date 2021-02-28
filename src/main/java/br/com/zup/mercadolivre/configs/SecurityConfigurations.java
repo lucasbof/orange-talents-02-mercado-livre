@@ -51,14 +51,15 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 			http.headers().frameOptions().disable();
 		}
 		
-		http.authorizeRequests()
-				.antMatchers(HttpMethod.POST, "/auth").permitAll()
-				.antMatchers("/h2-console/**").permitAll()
-				.anyRequest().authenticated()
-				.and().csrf().disable().sessionManagement()
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-				.addFilterBefore(new AuthenticationByTokenFilter(authService, userRepository),
-						UsernamePasswordAuthenticationFilter.class);
+		http
+			.authorizeRequests()
+			.antMatchers(HttpMethod.POST, "/auth").permitAll()
+			.antMatchers("/h2-console/**").permitAll()
+			.anyRequest().authenticated()
+			.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			.and().cors().and().csrf().disable()
+			.addFilterBefore(new AuthenticationByTokenFilter(authService, userRepository),
+					UsernamePasswordAuthenticationFilter.class);
 	}
 
 	// configs de recursos estáticos
