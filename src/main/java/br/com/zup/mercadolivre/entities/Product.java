@@ -141,4 +141,8 @@ public class Product implements Serializable {
 		links.stream().forEach(link -> this.images.add(new ProductImage(link, this)));
 	}
 
+	void updateStock(Integer orderedQuantity) {
+		this.quantity -= orderedQuantity;
+	}
+
 }
