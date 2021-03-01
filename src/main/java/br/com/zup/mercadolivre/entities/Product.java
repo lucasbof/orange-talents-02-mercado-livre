@@ -3,8 +3,10 @@ package br.com.zup.mercadolivre.entities;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,6 +52,12 @@ public class Product implements Serializable {
 	
 	@OneToMany(mappedBy = "product", cascade = CascadeType.MERGE)
 	private Set<ProductImage> images = new HashSet<>();
+	
+	@OneToMany(mappedBy = "product")
+	private List<ProductOpinion> opinions = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "product")
+	private List<ProductQuestion> questions = new ArrayList<>();
 	
 	@Deprecated
 	public Product() {
@@ -114,6 +122,14 @@ public class Product implements Serializable {
 
 	public Set<ProductImage> getImages() {
 		return images;
+	}
+
+	public List<ProductOpinion> getOpinions() {
+		return opinions;
+	}
+	
+	public List<ProductQuestion> getQuestions() {
+		return questions;
 	}
 
 	@PrePersist

@@ -31,6 +31,10 @@ public class ProductOpinion implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "author_id")
 	private User author;
+	
+	@Deprecated
+	public ProductOpinion() {
+	}
 
 	public ProductOpinion(Double grade, String title, String description, Product product, User author) {
 		this.grade = grade;

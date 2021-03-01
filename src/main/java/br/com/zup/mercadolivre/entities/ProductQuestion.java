@@ -33,6 +33,10 @@ public class ProductQuestion implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "author_id")
 	private User author;
+	
+	@Deprecated
+	public ProductQuestion() {
+	}
 
 	public ProductQuestion(String title, Product product, User author) {
 		this.title = title;
