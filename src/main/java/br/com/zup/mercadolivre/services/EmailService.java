@@ -21,4 +21,14 @@ public class EmailService {
 		mailer.send("<html>...</html>","Nova Compra...", order.getBuyer().getEmail() ,"novacompra@nossomercadolivre.com",
 				order.getProduct().getOwner().getEmail());
 	}
+
+	public void newPurchaseOrderSuccessful(PurchaseOrder order) {
+		mailer.send("<html>...</html>","Compra feita com sucesso", order.getProduct().getOwner().getEmail() ,"novacompra@nossomercadolivre.com",
+				order.getBuyer().getEmail());
+	}
+	
+	public void newPurchaseOrderFailure(PurchaseOrder order) {
+		mailer.send("<html>...</html>","A compra falhou...", order.getProduct().getOwner().getEmail() ,"novacompra@nossomercadolivre.com",
+				order.getBuyer().getEmail());
+	}
 }

@@ -55,6 +55,8 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 			.authorizeRequests()
 			.antMatchers(HttpMethod.POST, "/auth").permitAll()
 			.antMatchers("/h2-console/**").permitAll()
+			.antMatchers("/invoice/**").permitAll()
+			.antMatchers("/ranking/**").permitAll()
 			.anyRequest().authenticated()
 			.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and().cors().and().csrf().disable()

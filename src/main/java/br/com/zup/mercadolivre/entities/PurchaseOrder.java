@@ -1,6 +1,9 @@
 package br.com.zup.mercadolivre.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -10,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.Table;
 
@@ -41,6 +45,13 @@ public class PurchaseOrder implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "buyer_id")
 	private User buyer;
+	
+	@OneToMany(mappedBy = "purchaseOrder")
+	private List<Payment> payments = new ArrayList<>();
+	
+	@Deprecated
+	public PurchaseOrder() {
+	}
 
 	public PurchaseOrder(Integer quantity, PaymentGateway gateway, PurchaseOrderStatus status, Product product,
 			User buyer) {
@@ -74,6 +85,26 @@ public class PurchaseOrder implements Serializable {
 	public User getBuyer() {
 		return buyer;
 	}
+	
+	void updateStatus() {
+		List<Payment> successfulList = this.payments.stream().filter(p -> p.getSuccessfulPayment() == true).collect(Collectors.toList());
+		switch (successfulList.size()) {
+		case 1:
+			this.status = PurchaseOrderStatus.SUCCESS1;
+			break;
+		case 2:
+			this.status = PurchaseOrderStatus.SUCCESS2;
+			break;
+		default:
+			this.status = PurchaseOrderStatus.FAILURE;
+			break;
+		}
+	}
+
+	@PostPersist
+	private void updateStock() {
+		this.product.updateStock(this.quantity);		
+	}
 
 	@Override
 	public int hashCode() {
@@ -82,6 +113,7 @@ public class PurchaseOrder implements Serializable {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
+
 
 	@Override
 	public boolean equals(Object obj) {
@@ -100,8 +132,4 @@ public class PurchaseOrder implements Serializable {
 		return true;
 	}
 
-	@PostPersist
-	private void updateStock() {
-		this.product.updateStock(this.quantity);		
-	}
 }
