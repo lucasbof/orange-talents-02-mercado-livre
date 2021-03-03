@@ -22,13 +22,12 @@ public class EmailService {
 				order.getProduct().getOwner().getEmail());
 	}
 
-	public void newPurchaseOrderSuccessful(PurchaseOrder order) {
-		mailer.send("<html>...</html>","Compra feita com sucesso", order.getProduct().getOwner().getEmail() ,"novacompra@nossomercadolivre.com",
+	public void newPurchaseOrderStatusResponse(PurchaseOrder order, boolean isSuccess) {
+		if(isSuccess)
+			mailer.send("<html>...</html>","Compra feita com sucesso", order.getProduct().getOwner().getEmail() ,"novacompra@nossomercadolivre.com",
 				order.getBuyer().getEmail());
-	}
-	
-	public void newPurchaseOrderFailure(PurchaseOrder order) {
-		mailer.send("<html>...</html>","A compra falhou...", order.getProduct().getOwner().getEmail() ,"novacompra@nossomercadolivre.com",
-				order.getBuyer().getEmail());
+		else
+			mailer.send("<html>...</html>","A compra falhou...", order.getProduct().getOwner().getEmail() ,"novacompra@nossomercadolivre.com",
+					order.getBuyer().getEmail());
 	}
 }

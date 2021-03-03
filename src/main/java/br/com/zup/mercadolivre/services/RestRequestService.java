@@ -13,14 +13,12 @@ public class RestRequestService {
 	@Autowired
 	private RestTemplate restTemplate;
 	
-	public String executeGet(String url, Object... pathVars) {
+	public void executeGet(String url, Object... pathVars) {
 
 		HttpHeaders headers = new HttpHeaders();
 
 		HttpEntity<String> entity = new HttpEntity<>(headers);
 
-		HttpEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class, pathVars);
-
-		return response.getBody();
+		restTemplate.exchange(url, HttpMethod.GET, entity, String.class, pathVars);
 	}
 }

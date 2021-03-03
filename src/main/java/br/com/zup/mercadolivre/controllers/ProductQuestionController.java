@@ -1,5 +1,8 @@
 package br.com.zup.mercadolivre.controllers;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.Valid;
@@ -30,10 +33,11 @@ public class ProductQuestionController {
 	
 	@PostMapping
 	@Transactional
-	public ResponseEntity<Void> insert(@AuthenticationPrincipal User loggedUser, @RequestBody @Valid ProductQuestionForm questionForm) {
+	public ResponseEntity<List<String>> insert(@AuthenticationPrincipal User loggedUser, @RequestBody @Valid ProductQuestionForm questionForm) {
 		ProductQuestion productQuestion = questionForm.toModel(manager, loggedUser);
 		manager.persist(productQuestion);
 		emailService.newProductQuestion(productQuestion);
-		return ResponseEntity.ok().build();
+		List<ProductQuestion> questions = manager.createQuery("SELECT q FROM ProductQuestion q", ProductQuestion.class).getResultList();
+		return ResponseEntity.ok(questions.stream().map(q -> q.getTitle()).collect(Collectors.toList()));
 	}
 }

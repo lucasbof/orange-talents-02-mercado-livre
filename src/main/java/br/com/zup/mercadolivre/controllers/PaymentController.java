@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.zup.mercadolivre.controllers.forms.PaymentForm;
+import br.com.zup.mercadolivre.controllers.responses.PaymentResponse;
 import br.com.zup.mercadolivre.controllers.validations.AvoidPurchaseOrderWithMoreThan2SuccessfulTransactions;
 import br.com.zup.mercadolivre.controllers.validations.AvoidRepeatedSuccessfulTransaction;
 import br.com.zup.mercadolivre.entities.Payment;
@@ -42,7 +43,7 @@ public class PaymentController {
 
 	@PostMapping
 	@Transactional
-	public ResponseEntity<Long> insert(@RequestBody @Valid PaymentForm paymentForm) {
+	public ResponseEntity<PaymentResponse> insert(@RequestBody @Valid PaymentForm paymentForm) {
 		Payment payment = paymentForm.toModel(manager);
 		manager.persist(payment);
 		if (payment.getSuccessfulPayment()) {
@@ -50,11 +51,11 @@ public class PaymentController {
 					payment.getPurchaseOrder().getId(), payment.getPurchaseOrder().getBuyer().getId());
 			restRequestService.executeGet("http://localhost:8080/ranking/report/{purchaseOrderId}/{sellerId}",
 					payment.getPurchaseOrder().getId(), payment.getPurchaseOrder().getProduct().getOwner().getId());
-			emailService.newPurchaseOrderSuccessful(payment.getPurchaseOrder());
+			emailService.newPurchaseOrderStatusResponse(payment.getPurchaseOrder(), true);
 		}
 		else {
-			emailService.newPurchaseOrderFailure(payment.getPurchaseOrder());
+			emailService.newPurchaseOrderStatusResponse(payment.getPurchaseOrder(), false);
 		}
-		return ResponseEntity.ok(payment.getId());
+		return ResponseEntity.ok(new PaymentResponse(payment));
 	}
 }

@@ -16,9 +16,15 @@ public class GradesProductDetailsResponse implements Serializable {
 	private Integer totalNumber;
 
 	public GradesProductDetailsResponse(List<ProductOpinion> opinions) {
-		List<Double> grades = opinions.stream().map(op -> op.getGrade()).collect(Collectors.toList());
-		this.totalNumber = grades.size();
-		this.average = calculateAvarage(grades);
+		if(opinions.size() != 0) {
+			List<Double> grades = opinions.stream().map(op -> op.getGrade()).collect(Collectors.toList());
+			this.totalNumber = grades.size();
+			this.average = calculateAvarage(grades);
+		}
+		else {
+			this.average = new BigDecimal(0);
+			this.totalNumber = 0;
+		}
 	}
 
 	private BigDecimal calculateAvarage(List<Double> grades) {

@@ -100,26 +100,6 @@ class CategoryControllerTest {
 		assertEquals(categoryForm.getParentCategoryId(), category.getParentCategory().getId());
 	}
 	
-	@ParameterizedTest
-	@CsvSource(value = {"''", "'     '", ","})
-	@DisplayName("insert method return 400 when the name is blank")
-	void insertShouldReturn400WithErrorMessageWhenTheNameIsBlank(String categoryName) throws Exception {
-		CategoryForm categoryForm = categoryFormBuilder
-				.setName(categoryName)
-				.build();
-		
-		ResultActions result =
-				mockMvc.perform(post("/categories")
-					.content(toJson(categoryForm))
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaType.APPLICATION_JSON));
-		
-		result.andExpect(status().isBadRequest());
-				
-		result.andExpect(jsonPath("$.fieldErrors").isArray());
-		result.andExpect(jsonPath("$.fieldErrors[*].fieldName", hasItem("name")));
-	}
-	
 	@Test
 	@DisplayName("insert method should return 400 with error message when name is not unique")
 	void insertShouldReturn400WhenEmailIsNotUnique() throws Exception {

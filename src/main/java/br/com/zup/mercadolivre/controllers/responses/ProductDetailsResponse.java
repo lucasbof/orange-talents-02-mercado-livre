@@ -29,13 +29,21 @@ public class ProductDetailsResponse implements Serializable {
 		this.price = product.getPrice();
 		this.description = product.getDescription();
 		this.grade = new GradesProductDetailsResponse(product.getOpinions());
-		this.characteristics = product.getCharacteristics().stream()
-				.map(c -> new CharacteristcsProductDetailsResponse(c)).collect(Collectors.toList());
-		this.imgUrls = product.getImages().stream().map(i -> i.getImgUrl()).collect(Collectors.toSet());
-		this.questions = product.getQuestions().stream().map(q -> new QuestionsProductDetailsResponse(q))
-				.collect(Collectors.toList());
-		this.opinions = product.getOpinions().stream().map(o -> new OpinionsProductDetailsResponse(o))
-				.collect(Collectors.toList());
+		
+		if(product.getCharacteristics().size() != 0)
+			this.characteristics = product.getCharacteristics().stream()
+					.map(c -> new CharacteristcsProductDetailsResponse(c)).collect(Collectors.toList());
+		
+		if(product.getImages().size() != 0)
+			this.imgUrls = product.getImages().stream().map(i -> i.getImgUrl()).collect(Collectors.toSet());
+		
+		if(product.getQuestions().size() != 0)
+			this.questions = product.getQuestions().stream().map(q -> new QuestionsProductDetailsResponse(q))
+					.collect(Collectors.toList());
+		
+		if(product.getOpinions().size() != 0)
+			this.opinions = product.getOpinions().stream().map(o -> new OpinionsProductDetailsResponse(o))
+					.collect(Collectors.toList());
 	}
 
 	public String getName() {
